@@ -1,0 +1,29 @@
+{
+  "skill_name": "cie-econ-essay",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Can you mark this for me? It's a CIE A-Level Econ 12-marker.\n\nQuestion: Discuss whether monetary policy is the most effective way for a government to reduce inflation. [12]\n\nAnswer:\nMonetary policy is when the central bank changes interest rates. If inflation is high, the central bank raises interest rates. This makes borrowing more expensive so people borrow less and spend less. Firms also invest less because loans cost more. This reduces aggregate demand and so reduces demand-pull inflation.\n\nA diagram of AD-AS would show AD shifting left from AD1 to AD2, reducing the price level from PL1 to PL2.\n\nHowever, monetary policy has time lags. It can take 18 months for interest rate changes to fully affect the economy. Also if inflation is cost-push, raising interest rates won't help much because the cause is on the supply side.\n\nFiscal policy could also be used. The government can raise taxes or cut spending to reduce AD. But this is unpopular politically.\n\nIn conclusion, monetary policy can reduce inflation but it depends on the type of inflation and other factors.",
+      "expected_output": "Marking output following the SKILL.md structure: level awarded with mark, band justification, AO breakdown across AO1-AO4, strengths, weaknesses, and a targeted rewrite of one paragraph. Should award roughly Level 3 (mid) — analysis is present but evaluation is generic and the conclusion is fence-sitting.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I'm preparing for CIE A-Level Econ Paper 4. Can you write me a full A* sample answer for this question?\n\n'Evaluate the view that the use of indirect taxes is the most effective way for a government to correct the market failure caused by negative externalities of consumption.' [12 marks]",
+      "expected_output": "Three-part output: (1) a compact plan showing structure, (2) a full essay of realistic exam length (~300-450 words) with diagram descriptions in brackets including axes, curves, shifts and labelled welfare loss, (3) examiner notes explaining specifically why it scores A*. Must compare indirect tax to at least one alternative policy (regulation, information, minimum price) and reach a conditional judgement.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Here's a Paper 2 AS data response part (c) that I wrote. The question gave an extract about coffee prices rising in 2022 due to poor harvests in Brazil. Part (c) said: 'Analyse, using a diagram, how a poor coffee harvest in Brazil would affect the global coffee market.' [6 marks]\n\nMy answer: A poor harvest means less coffee is produced. This reduces supply. On a diagram, the supply curve shifts left from S1 to S2. The price goes up and quantity goes down. This is because there is a shortage at the old price so price rises to clear the market.",
+      "expected_output": "Marking output. Should award Level 2 (around 4/6) because while the basic mechanism and diagram are correct, application to the extract (Brazil specifically, global market specifics) is weak, and the chain of reasoning is short. The targeted rewrite paragraph should show how to deepen the analysis with reference to Brazil's share of global supply, PED of coffee, and time horizon for substitution.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Write me an A* sample answer for this CIE A-Level Paper 4 essay question, please.\n\n'Discuss whether protectionist policies are an effective way for a developing economy to promote long-term economic growth.' [12 marks]",
+      "expected_output": "A2-level sample answer with plan + full essay + examiner notes. Should reflect A2 depth: compare protectionism (tariffs, quotas, subsidies) against alternative growth strategies (export-led growth, FDI, supply-side reform), apply specifically to a developing-economy context (infant industry argument, terms of trade, BoP), use at least one diagram (tariff diagram with welfare loss, or PPC/AD-AS), and evaluate by multiple dimensions (time horizon — short-run protection vs long-run inefficiency, magnitude, context — small open vs large economy). Conclusion must be conditional, e.g. 'protectionism can promote growth in the short run for infant industries but undermines long-run growth unless paired with a credible exit strategy.'",
+      "files": []
+    }
+  ]
+}
