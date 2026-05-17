@@ -1,6 +1,6 @@
 ---
 name: cie-econ-essay
-description: Marks and writes CIE A-Level Economics (9708) essay and data-response answers using official CIE level descriptors (L1–L4) and AO1–AO4 commentary, and produces A*-grade sample answers with plan, full essay (with inline SVG diagrams), and examiner notes. STRICT TRIGGER RULE — only invoke this skill when the user's message begins with the prefix "cie:" (case-insensitive) OR when the user explicitly says "use the CIE skill" / "use my CIE econ skill". Do NOT invoke this skill for any other prompt, even if it concerns Economics, essay marking, A-Levels, exam preparation, or model answers — the owner runs an education business covering multiple boards and wants explicit, opt-in control over when CIE marking is applied. If the prefix or explicit invocation phrase is absent, ignore this skill entirely and let Claude answer normally.
+description: Marks and writes CIE A-Level Economics (9708) essay and data-response answers using official CIE level descriptors (L1–L4) and AO1–AO4 commentary. Produces A*-grade sample answers with plan, full essay, and examiner notes. Has two modes — (1) default typed-essay mode with inline SVG diagrams, and (2) handwritten/timed-conditions mode that reads images of handwritten student work (transcribing first, flagging illegible parts, assessing hand-drawn diagrams, estimating writing time) and produces realistic samples calibrated to what a student can actually write by hand in the exam (tighter word counts, hand-drawable diagrams, timing breakdown, realistic shortcuts). STRICT TRIGGER RULE — only invoke this skill when the user's message begins with the prefix "cie:" (case-insensitive) OR when the user explicitly says "use the CIE skill" / "use my CIE econ skill". Do NOT invoke this skill for any other prompt, even if it concerns Economics, essay marking, A-Levels, exam preparation, or model answers — the owner runs an education business covering multiple boards and wants explicit, opt-in control over when CIE marking is applied. If the prefix or explicit invocation phrase is absent, ignore this skill entirely and let Claude answer normally.
 ---
 
 # CIE A-Level Economics — Marker & Sample Writer
@@ -23,6 +23,20 @@ Use it whenever any of the following happens:
 - The user asks "how would I get full marks on this?" or "what would a top-band answer look like?"
 
 Lean towards using this skill rather than answering from general economics knowledge — the CIE-specific structure and language is what distinguishes a 6/12 answer from a 12/12 one, and that structure is captured here.
+
+## Step 0: Decide which mode applies
+
+Before anything else, decide whether to operate in **default typed mode** or **handwritten/timed mode**.
+
+Switch to handwritten/timed mode if **any** of these are true:
+
+1. The user has attached an image of handwritten work.
+2. The user's prompt contains **"timed"**, **"handwritten"**, **"by hand"**, **"exam conditions"**, or **"realistic"**.
+3. The user is clearly asking what an answer would look like in the actual exam (not a polished study reference).
+
+In handwritten/timed mode, **read `references/timed-handwritten.md` and follow it.** That reference fully overrides the default essay-writing instructions in this file: tighter word counts, hand-drawable diagram descriptions (not inline SVG), timing plans, transcription of handwritten input, separate diagram assessment, and time-estimate flagging.
+
+Otherwise continue with the default typed-essay flow below.
 
 ## Step 1: Identify the question type
 
@@ -174,5 +188,6 @@ When in doubt, draw two diagrams rather than one — a "before" and "after" pair
 
 - `references/levels-and-aos.md` — Level descriptors (L1–L4) for 8-mark and 12-mark parts, plus full AO1–AO4 descriptors.
 - `references/diagrams.md` — Catalogue of CIE Economics diagrams with axes, curves, and common shift scenarios.
-- `references/svg-templates.md` — Copy-pasteable inline SVG templates for the most common diagrams; use these when generating sample essays so the diagram renders visually, not just as a bracketed description.
+- `references/svg-templates.md` — Copy-pasteable inline SVG templates for the most common diagrams; use these when generating typed-mode sample essays so the diagram renders visually.
 - `references/essay-templates.md` — Skeleton structures for the most common question patterns ("Discuss whether X policy…", "Evaluate the view that…", "To what extent…").
+- `references/timed-handwritten.md` — Handwritten/timed-conditions mode. Read this whenever the input is a handwritten image OR the user asks for a "timed" / "handwritten" / "realistic" answer. Overrides the default essay-writing instructions.
