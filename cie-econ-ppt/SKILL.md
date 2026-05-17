@@ -38,7 +38,7 @@ If the topic is ambiguous between A-Level and IGCSE, ask **one** clarifying ques
 
 ## What you produce
 
-A real `.pptx` file written to disk. Default output path on the owner's Windows machine: `C:\Users\right\OneDrive\Desktop\<course>-<topic-slug>.pptx` (the Desktop is OneDrive-synced, so the plain `C:\Users\right\Desktop\` path does NOT exist — writing there will throw `FileNotFoundError`). Always check the OneDrive path first; if the user is on a different machine, fall back to the current working directory and tell them where it landed.
+A real `.pptx` file written to disk. Default output path is the user's Desktop, named `<course>-<topic-slug>.pptx`. Important: on Windows machines where OneDrive sync is enabled, the Desktop lives at `C:\Users\<user>\OneDrive\Desktop\`, not the plain `C:\Users\<user>\Desktop\` (which won't exist). Detect this by checking both paths; use whichever exists. Fall back to the current working directory if neither exists, and always tell the user the exact path you wrote to.
 
 The deck must contain, in order:
 
@@ -96,8 +96,14 @@ Write the spec to a temp JSON file, then call:
 python scripts/build_deck.py <spec.json> <out.pptx>
 ```
 
-Use the user's Python interpreter. On this machine it is at
-`C:\Users\right\AppData\Local\Programs\Python\Python312-arm64\python.exe`.
+Use the user's Python interpreter. To find it, try in this order:
+
+1. Check memory for a saved Python path note (e.g. `python_setup` memory entry).
+2. Run `python --version` / `python3 --version` / `py -3 --version` in the user's shell. The first that returns a real version (NOT the Windows Store placeholder error) is the interpreter to use.
+3. On Windows, also check `C:\Users\<user>\AppData\Local\Programs\Python\Python3*\python.exe`.
+4. If none work, tell the user: "I need Python 3.10+ with `python-pptx` and `matplotlib`. Run `./install.ps1` (or `install.sh`) from the cloned A-Level-Econ-Marking-Sample repo to set it up, then retry."
+
+Save the discovered path to memory the first time you find it on a new machine, so future runs are instant.
 
 If the call fails, read the traceback and fix the spec. Common pitfalls:
 
