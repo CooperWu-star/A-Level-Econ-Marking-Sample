@@ -9,6 +9,9 @@ You can override the diagram's built-in title with `"diagram_title": "..."` on t
 | diagram_id | What it shows | Typical use |
 |---|---|---|
 | `demand_supply` | D/S with equilibrium P*, Q* | Topic 2.1 baseline |
+| `demand_curve` | Single downward-sloping D | Topic 2.1 "why D slopes down" |
+| `supply_curve` | Single upward-sloping S | Topic 2.1 "why S slopes up" |
+| `demand_movement` | Movement ALONG D (A→B, own-price change) | Topic 2.1 movement-vs-shift (pair with `demand_supply_demand_right`) |
 | `demand_supply_demand_right` | Rightward shift in D | Income rise, taste change |
 | `demand_supply_demand_left` | Leftward shift in D | Substitute price falls |
 | `demand_supply_supply_right` | Rightward shift in S | Tech improvement |

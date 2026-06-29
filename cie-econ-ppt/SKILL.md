@@ -67,6 +67,14 @@ Read the relevant syllabus reference file to get the **authoritative list of sub
 
 Find the topic and copy its sub-points into your working memory. **Every sub-point must be covered by at least one slide.** If the syllabus lists six sub-points under 2.1, you should be able to point to six slides (or six bullets across a handful of slides) that map onto them.
 
+Then read `references/coursebook-map.md` and look the topic up there. This is what keeps the deck **aligned with the textbook and the syllabus structure** the class is using:
+
+- It gives the **coursebook unit + chapter** for the topic (the endorsed Bamford & Grant book lays out one chapter per syllabus topic, in order). Put that in the deck's `kicker` field and the title-slide subtitle, e.g. `9708 · 2.1 · Coursebook Unit 2, Ch 7`, so students can read along.
+- **Sequence your slides in the textbook's order** — the chapter's internal `X.1, X.2 …` sections mirror the syllabus sub-points, which is the order both the book and the class follow.
+- It also lists the **`diagram_id`s that fit each topic**, so Step 4 is mostly a lookup.
+
+(A-Level only. IGCSE 0455 is a different qualification — use `igcse-syllabus.md` and your own knowledge there.)
+
 ### Step 3 — Pull case studies
 
 Read `references/case-study-bank.md` and pick the cases that match the topic — one *classic*, one *recent* per major concept (you can use the same case twice if it genuinely illustrates two concepts). If the bank doesn't cover the concept, generate fresh cases using your own knowledge but keep to the same shape: a real, famous, fact-checkable event with a short "theory link" line.
@@ -75,18 +83,34 @@ Do not invent specific statistics. If you're not sure of a number, describe dire
 
 ### Step 4 — Pick diagrams
 
-Read `references/diagram-catalog.md`. For each concept in your scope that benefits from a diagram, choose the matching `diagram_id`. **Only use IDs that exist in the catalog** — they map to functions in `scripts/diagrams.py`. If a concept needs a diagram that isn't in the catalog, use a `content` slide instead and add `TODO_DIAGRAM: <description>` to the speaker notes; the user will extend the library later.
+The topic's row in `references/coursebook-map.md` already lists the `diagram_id`s that fit it — start there. For full detail (what each renders, typical use) read `references/diagram-catalog.md`. For each concept in your scope that benefits from a diagram, choose the matching `diagram_id`. **Only use IDs that exist in the catalog** — they map to functions in `scripts/diagrams.py`. If a concept needs a diagram that isn't in the catalog, use a `content` slide instead and add `TODO_DIAGRAM: <description>` to the speaker notes; the user will extend the library later.
 
 ### Step 5 — Build the JSON spec
 
-Construct a Python `dict` matching the schema in `scripts/build_deck.py` (the docstring at the top shows the full contract). Concretely, each slide is one of these `type`s:
+**First read `references/design-system.md`** — it explains the palette, the locked type scale, the slide types, and page rhythm. The styling is all handled by the engine; your job is to pick the right slide type per idea and sequence them well.
+
+Set two top-level fields the design system uses:
+
+- `"palette"` — one of `academy` (default), `cool-corporate`, `editorial-classic`, `warm-earth`, `nature-organic`, `mono-ink`, `dark-cinematic`. Pick by topic feel (see design-system.md §1); when unsure, use `academy`.
+- `"kicker"` — the syllabus + coursebook tag from Step 2, e.g. `9708 · 2.1 · Coursebook Unit 2, Ch 7`. Shown on every content slide.
+
+Construct a Python `dict` matching the schema in `scripts/build_deck.py` (the docstring at the top shows the full contract). Each slide is one of these `type`s:
 
 - `title` — opening slide. Use once, at the top.
-- `definition` — for *the* canonical statement of a key term. Use sparingly: one definition slide per genuinely new term. Bundle related minor terms onto a `content` slide.
-- `content` — explanatory body: mechanism, determinants, lists, derivations.
-- `diagram` — left half is the diagram image, right half is caption + bullets.
-- `case_study` — `era` is "Classic" or "Recent"; renders a coloured chip and a "Theory link" band.
-- `summary` — closing recap; use once, at the end.
+- `section` — a divider that opens a new concept block (big number + title on a near-empty field). This is a **breathing** slide — use it to break up the deck.
+- `definition` — *the* canonical statement of one key term, in a quoted card. One per genuinely new term; bundle minor terms onto a `content` slide.
+- `content` — explanatory body: mechanism, determinants, lists, derivations. Optional `intro` lead line.
+- `diagram` — diagram in a card on the left, caption + walkthrough bullets on the right. Use one wherever a concept is visual.
+- `diagram_pair` — **two diagrams side by side** (`left`/`right`, each `{diagram_id, caption}`). Use for visual contrasts: movement-vs-shift (`demand_movement` vs `demand_supply_demand_right`), monopoly-vs-perfect-competition, demand-pull-vs-cost-push.
+- `case_study` — `era` is "Classic" or "Recent" (coloured chip); fill `summary`, `bullets`, and always `link_to_theory`.
+- `compare` — two things side by side (`left`/`right`, each `{head, bullets}`). Use for movement-vs-shift, AS-vs-A2, monopoly-vs-perfect-competition, fiscal-vs-monetary.
+- `stat` — one striking number (`value`) + `label` + `caption`. A **breathing** slide; use where a figure lands hard.
+- `quote` — a pull-quote / framing line (`text`, `attribution`). A **breathing** slide.
+- `summary` — closing "you should now be able to…" recap; use once, at the end.
+
+**Page rhythm (important):** open each concept block with a `section`, carry the teaching in `definition`/`content`/`diagram`, and punctuate with a `stat`, `quote` or `compare`. Don't produce a run of identical bullet slides — that is the #1 "AI deck" tell. Aim for ~3–4 breathing slides spread through a 20-slide deck.
+
+**Teach, don't just list (important).** A bullet may be a plain string (a short cue) OR a `{"point": "...", "detail": "..."}` object that *explains* it. On teaching slides use the object form — the `point` is the term (kept short, bolded) and the `detail` is the one-line explanation of the mechanism. A slide that is only keywords (`Income`, `Substitutes`, `Tastes`) is a revision aid, not a lesson; write `{"point":"Income","detail":"normal good → D shifts right as income rises; inferior good → D shifts left."}` instead. Keep the detail to one clause (~one line).
 
 ### Step 6 — Hand the spec to `build_deck.py`
 
@@ -117,6 +141,7 @@ Tell the user:
 
 - the exact path of the .pptx
 - the slide count and rough breakdown (e.g. "26 slides: 1 title, 5 definitions, 8 content, 7 diagrams, 4 case studies, 1 recap")
+- the palette used and the coursebook chapter the deck follows (e.g. "academy palette · aligned to Coursebook Unit 2, Ch 7")
 - any `TODO_DIAGRAM` placeholders you left, so they know what's missing
 - any syllabus sub-points you intentionally trimmed (e.g. AS-only material in an A2 chapter)
 
@@ -124,11 +149,19 @@ Tell the user:
 
 These rules are baked into `build_deck.py`'s layouts, but you control the *content*, which is what decides whether the deck is teachable. Apply them as you draft the spec.
 
+**Cover the whole topic — including both halves.** Before you finalise, list the topic's syllabus sub-points (from `syllabus-a-level.md`) and tick each one off against a slide. A topic titled "X **and** Y" (Demand **and** supply, Costs **and** revenue, Monopoly **and** perfect competition) must give **both** roughly equal treatment — it is a common failure to teach X thoroughly and leave Y as an afterthought. For Topic 2.1 that means: effective *demand* AND *supply* defined; determinants of *demand* AND of *supply*; shift in *D* AND in *S*; plus equilibrium and the movement/shift distinction. If you drop a sub-point on purpose, say so in Step 7.
+
+**Frame policy topics as Definition → Mechanism → Evaluation.** For any *policy* topic (5.1–5.4 fiscal/monetary/supply-side, 8.1 micro intervention, 10.3 policy effectiveness, 11.1 BoP policies — anything where the answer is "use policy X"), teach each policy in the three beats a strong exam answer uses:
+1. **① Definition** — what the policy is and its tools (AO1). The lead `definition` slide; supporting `content` slides (budget, taxation, spending, etc.) elaborate the tools under this beat.
+2. **② Mechanism** — the chain of reasoning drawn on a diagram (AD/AS, money market, PPC) through to the macro objectives (AO2/AO3). The `diagram`/`diagram_pair` slides. The *reasons to tax and to spend are themselves mechanisms* (each is a channel — "manage AD" is macro, "redistribute"/"correct market failure" are micro) — give them their own detailed slides, not one throwaway bullet. For fiscal, also cover **automatic stabilisers vs discretionary policy**.
+3. **③ Evaluation** — a dedicated slide (split into two if it runs past ~5 bullets) that weighs **strengths → limitations → judgement** (AO3/AO4): time lags, crowding out, the zero lower bound, magnitude/multiplier, cost, **expectations/confidence** (agents may *save* a tax cut rather than spend it, shrinking the multiplier), **disincentive & cost-push effects** of high tax rates (wage claims → higher firm costs), and *the state of the economy* ("it depends on the output gap"), ending on a reasoned judgement. This is the beat that separates grades and is the one most often missing — **never ship a policy block without it.**
+Signpost the beats: put `① Define → ② Mechanism → ③ Evaluate` in the `section` subtitle, and prefix the lead slide of each beat (`① Definition — …`, `② Mechanism — …`, `③ Evaluation — …`). Add an early `content` slide teaching this skeleton so students internalise the exam structure.
+
 **One concept per slide.** Resist the urge to cram. If a slide has a definition *and* a diagram *and* three bullets *and* a case study, it's three slides.
 
-**Bullets are sentences with the verb removed.** "Effective demand requires willingness and ability to pay" → "Willingness *and* ability to pay (not just want)". Keep each bullet under ~14 words. Aim for 3–5 bullets per slide; never more than 6.
+**Explain, don't list.** Keep the *point* short, but add the *detail* that teaches the mechanism (use the `{point, detail}` bullet form — see "Teach, don't just list" above). A wall of bare nouns is a revision flashcard, not a lesson. Aim for 3–5 bullets per slide; never more than 6. Where the explanation is for the teacher to say aloud rather than show, put it in `notes`.
 
-**Diagrams must be load-bearing.** Don't add a diagram for decoration. A diagram slide should have a caption that names the mechanism and bullets that walk through what happens at the labelled points. If the only thing you'd say about the diagram is "here is supply and demand", use a `content` slide instead.
+**Diagrams must be load-bearing — and use them generously.** Wherever a concept is inherently visual (a curve, a shift, a movement, an equilibrium, surplus, a tax wedge), show the diagram — don't describe it in words. A diagram slide needs a caption that names the mechanism and bullets that walk through what happens at the labelled points. For a *contrast* between two diagrams (movement vs shift, monopoly vs perfect competition), use a `diagram_pair` slide so the student sees them together. If the only thing you'd say is "here is supply and demand", use a `content` slide instead.
 
 **Case studies must link to theory.** Always fill `link_to_theory` with the specific mechanism the case illustrates (e.g. *"Leftward shift in S with low PED → sharp price rise, small Q fall"*). This is what makes the case examinable — without the link it's just a news headline.
 
@@ -154,25 +187,27 @@ When the user says "AS" or "A2" explicitly, lock to that. Don't put A2 indiffere
 
 User: `cie ppt: A-Level Topic 2.1 Demand and supply, 22 slides`
 
-Your spec, in outline (not literal Python, just the shape):
+Top-level: `palette` "academy", `kicker` "9708 · 2.1 · Coursebook Unit 2, Ch 7" (from the coursebook map). Your spec, in outline (not literal Python, just the shape):
 
-1. `title` — "Topic 2.1 — Demand and supply curves", subtitle "CIE A-Level Economics 9708 · AS Microeconomics"
-2. `content` "What this topic covers" — bullets are the sub-point list from the syllabus
-3. `definition` "Effective demand" — term + CIE definition + 3 key-point bullets
-4. `content` "Determinants of demand" — PASIFIC or similar, 5 bullets
-5. `diagram` "Demand curve" — `demand_supply` with the supply curve hidden? — no, use a `content` slide with bullets ("downward sloping because…")
+1. `title` — "Demand & Supply Curves", subtitle "AS Micro · Theme 2 · Coursebook Ch 7"
+2. `section` №1 "How markets set a price" — *breathing*
+3. `definition` "Effective demand" — CIE definition + 3 key-point bullets
+4. `content` "Determinants of demand" — 5 bullets
+5. `diagram` "The demand curve" — `demand_supply`, caption on why it slopes down
 6. `definition` "Supply"
 7. `content` "Determinants of supply"
-8. `diagram` "Equilibrium" — `demand_supply` — caption "P\* and Q\* clear the market"
-9. `content` "Shift vs movement along" — explain the distinction
-10. `diagram` "Rightward shift in demand" — `demand_supply_demand_right`
-11. `diagram` "Leftward shift in supply" — `demand_supply_supply_left`
-12. `case_study` Classic — OPEC 1973 oil shock, era "Classic"
-13. `case_study` Recent — 2022 egg price spike, era "Recent"
-14. `content` "Functions of price" — rationing, signalling, incentivising
-15. `summary` — 5 "you should now be able to…" bullets mapping back to the syllabus sub-points
+8. `section` №2 "Equilibrium and change" — *breathing*
+9. `diagram` "Market equilibrium" — `demand_supply`, caption "P* and Q* clear the market"
+10. `compare` "Movement along vs shift" — the distinction, side by side
+11. `diagram` "Rightward shift in demand" — `demand_supply_demand_right`
+12. `diagram` "Leftward shift in supply" — `demand_supply_supply_left`
+13. `case_study` Classic — OPEC 1973 oil shock, era "Classic"
+14. `case_study` Recent — 2022 egg price spike, era "Recent"
+15. `stat` "+60%" — US egg prices YoY — *breathing*, lands the low-PED point
+16. `content` "Functions of price" — rationing, signalling, incentivising
+17. `summary` — "you should now be able to…" mapping back to the 7 sub-points of 2.1
 
-That's 15 slides, not 22 — so add more granularity: split the "determinants of demand" slide into two, add a worked numerical example slide, add a "common exam pitfalls" slide. Land at 22.
+That's 17; to reach 22 add granularity (split determinants into two, a worked PED-numerical `content`, a "common exam pitfalls" `content`, a `quote` on the functions of price). Note the rhythm: `section`/`stat`/`quote`/`compare` break up the bullet runs so it never reads as an "AI deck".
 
 ## Files in this skill
 
@@ -181,12 +216,14 @@ cie-econ-ppt/
 ├── SKILL.md                          (you are here)
 ├── references/
 │   ├── syllabus-a-level.md           (authoritative topic list for 9708, 2026–28)
+│   ├── coursebook-map.md             (syllabus topic ↔ Bamford & Grant chapter + diagrams)
+│   ├── design-system.md              (palettes, type scale, slide types, page rhythm)
 │   ├── igcse-syllabus.md             (provisional IGCSE 0455 structure)
 │   ├── diagram-catalog.md            (which diagram_id renders what)
 │   └── case-study-bank.md            (classic + recent cases, ready to drop in)
 └── scripts/
-    ├── diagrams.py                   (matplotlib econ diagram library)
-    └── build_deck.py                 (JSON spec → .pptx, full layout engine)
+    ├── diagrams.py                   (matplotlib econ diagram library, palette-aware)
+    └── build_deck.py                 (JSON spec → .pptx, full design-system layout engine)
 ```
 
 ## Common failures to avoid

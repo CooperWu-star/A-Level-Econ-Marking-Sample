@@ -22,16 +22,46 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # ----- House style ----------------------------------------------------------
+# Curves are drawn in INK; the "new / shifted" curve and welfare markers use
+# ACCENT. ACCENT defaults to a refined exam red but can be re-tied to the deck
+# accent by build_deck via set_theme(); a luminance guard keeps it legible on
+# the white diagram card (a too-pale accent falls back to the default red).
 
-LINE = dict(color="black", linewidth=2)
+INK = "#1a1a1a"
+ACCENT = "#c0392b"
+_ACCENT_DEFAULT = "#c0392b"
+LINE = dict(color=INK, linewidth=2)
 DASH = dict(color="grey", linewidth=1, linestyle="--")
 LABEL_FS = 12
 TITLE_FS = 13
 
 
+def _luma(hex_color):
+    h = hex_color.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
+
+
+def set_theme(accent=None, ink=None):
+    """Re-tie diagram colours to the deck palette. Called from build_deck.py.
+
+    accent: hex like '#E06B2A' for the shifted/new curve. If it is too light to
+            read on a white card (luma > 0.62) the default exam red is kept.
+    ink:    hex for the main curves / axes.
+    """
+    global ACCENT, INK
+    if accent:
+        ACCENT = accent if _luma(accent) <= 0.62 else _ACCENT_DEFAULT
+    if ink:
+        INK = ink
+        LINE["color"] = ink
+
+
 def _setup(ax, xlabel="Quantity", ylabel="Price", title=""):
-    ax.set_xlabel(xlabel, fontsize=LABEL_FS)
-    ax.set_ylabel(ylabel, fontsize=LABEL_FS)
+    # labelpad pushes the axis titles clear of the equilibrium markers, which
+    # sit just outside the axes at x=-0.4 / y=-0.4 (otherwise they collide).
+    ax.set_xlabel(xlabel, fontsize=LABEL_FS, labelpad=22)
+    ax.set_ylabel(ylabel, fontsize=LABEL_FS, labelpad=30)
     if title:
         ax.set_title(title, fontsize=TITLE_FS)
     ax.spines["top"].set_visible(False)
@@ -77,20 +107,20 @@ def demand_supply(out: str, shift: str | None = None, title: str = "Market equil
     if shift:
         if shift == "demand_right":
             D2 = 11 - 0.8 * x; lbl = "D₁"; new_x = 6.25; new_y = 1 + 0.8 * new_x
-            ax.plot(x, D2, color="red", linewidth=2); ax.text(9.6, D2[-1], lbl, color="red", fontsize=LABEL_FS, va="center")
+            ax.plot(x, D2, color=ACCENT, linewidth=2); ax.text(9.6, D2[-1], lbl, color=ACCENT, fontsize=LABEL_FS, va="center")
         elif shift == "demand_left":
             D2 = 7 - 0.8 * x; lbl = "D₁"; new_x = 3.75; new_y = 1 + 0.8 * new_x
-            ax.plot(x, D2, color="red", linewidth=2); ax.text(9.6, D2[-1], lbl, color="red", fontsize=LABEL_FS, va="center")
+            ax.plot(x, D2, color=ACCENT, linewidth=2); ax.text(9.6, D2[-1], lbl, color=ACCENT, fontsize=LABEL_FS, va="center")
         elif shift == "supply_right":
             S2 = -1 + 0.8 * x; lbl = "S₁"; new_x = 6.25; new_y = 9 - 0.8 * new_x
-            ax.plot(x, S2, color="red", linewidth=2); ax.text(9.6, S2[-1], lbl, color="red", fontsize=LABEL_FS, va="center")
+            ax.plot(x, S2, color=ACCENT, linewidth=2); ax.text(9.6, S2[-1], lbl, color=ACCENT, fontsize=LABEL_FS, va="center")
         elif shift == "supply_left":
             S2 = 3 + 0.8 * x; lbl = "S₁"; new_x = 3.75; new_y = 9 - 0.8 * new_x
-            ax.plot(x, S2, color="red", linewidth=2); ax.text(9.6, S2[-1], lbl, color="red", fontsize=LABEL_FS, va="center")
-        ax.plot([new_x, new_x], [0, new_y], color="red", linestyle="--", linewidth=1)
-        ax.plot([0, new_x], [new_y, new_y], color="red", linestyle="--", linewidth=1)
-        ax.text(new_x, -0.4, "Q₁", ha="center", va="top", color="red", fontsize=LABEL_FS)
-        ax.text(-0.4, new_y, "P₁", ha="right", va="center", color="red", fontsize=LABEL_FS)
+            ax.plot(x, S2, color=ACCENT, linewidth=2); ax.text(9.6, S2[-1], lbl, color=ACCENT, fontsize=LABEL_FS, va="center")
+        ax.plot([new_x, new_x], [0, new_y], color=ACCENT, linestyle="--", linewidth=1)
+        ax.plot([0, new_x], [new_y, new_y], color=ACCENT, linestyle="--", linewidth=1)
+        ax.text(new_x, -0.4, "Q₁", ha="center", va="top", color=ACCENT, fontsize=LABEL_FS)
+        ax.text(-0.4, new_y, "P₁", ha="right", va="center", color=ACCENT, fontsize=LABEL_FS)
     return _save(fig, out)
 
 
@@ -109,9 +139,9 @@ def ppc(out: str, shift: str | None = None, title: str = "Production possibility
     if shift in ("outward", "inward"):
         scale = 10 if shift == "outward" else 6
         x2 = scale * np.sin(t); y2 = scale * np.cos(t)
-        ax.plot(x2, y2, color="red", linewidth=2)
+        ax.plot(x2, y2, color=ACCENT, linewidth=2)
         lbl = "PPC₁"
-        ax.text(scale + 0.2, 0.2, lbl, color="red", fontsize=LABEL_FS)
+        ax.text(scale + 0.2, 0.2, lbl, color=ACCENT, fontsize=LABEL_FS)
     return _save(fig, out)
 
 
@@ -167,15 +197,15 @@ def indirect_tax(out: str, title: str = "Effect of an indirect (specific) tax") 
     D = 9 - 0.8 * x; S = 1 + 0.8 * x; S2 = 3 + 0.8 * x
     ax.plot(x, D, **LINE); ax.text(9.6, D[-1], "D", fontsize=LABEL_FS, va="center")
     ax.plot(x, S, **LINE); ax.text(9.6, S[-1], "S", fontsize=LABEL_FS, va="center")
-    ax.plot(x, S2, color="red", linewidth=2); ax.text(9.6, S2[-1], "S+tax", color="red", fontsize=LABEL_FS, va="center")
+    ax.plot(x, S2, color=ACCENT, linewidth=2); ax.text(9.6, S2[-1], "S+tax", color=ACCENT, fontsize=LABEL_FS, va="center")
     # Old eq Q=5,P=5; new eq where D=S2 -> 9-0.8x = 3+0.8x -> x=3.75, P=6
     _drop(ax, 5, 5, "Q*", "P*")
-    ax.plot([3.75, 3.75], [0, 6], color="red", linestyle="--")
-    ax.plot([0, 3.75], [6, 6], color="red", linestyle="--")
-    ax.plot([0, 3.75], [3, 3], color="red", linestyle="--")
-    ax.text(3.75, -0.4, "Q₁", ha="center", va="top", color="red")
-    ax.text(-0.4, 6, "P_c", ha="right", va="center", color="red")
-    ax.text(-0.4, 3, "P_p", ha="right", va="center", color="red")
+    ax.plot([3.75, 3.75], [0, 6], color=ACCENT, linestyle="--")
+    ax.plot([0, 3.75], [6, 6], color=ACCENT, linestyle="--")
+    ax.plot([0, 3.75], [3, 3], color=ACCENT, linestyle="--")
+    ax.text(3.75, -0.4, "Q₁", ha="center", va="top", color=ACCENT)
+    ax.text(-0.4, 6, "P_c", ha="right", va="center", color=ACCENT)
+    ax.text(-0.4, 3, "P_p", ha="right", va="center", color=ACCENT)
     return _save(fig, out)
 
 
@@ -209,17 +239,17 @@ def price_control(out: str, kind: str = "ceiling", title: str | None = None) -> 
     ax.text(9.6, D[-1], "D", fontsize=LABEL_FS, va="center")
     ax.text(9.6, S[-1], "S", fontsize=LABEL_FS, va="center")
     pc = 3 if kind == "ceiling" else 7
-    ax.axhline(pc, color="red", linewidth=2)
-    ax.text(9.4, pc + 0.2, "P_ceiling" if kind == "ceiling" else "P_floor", color="red", fontsize=LABEL_FS)
+    ax.axhline(pc, color=ACCENT, linewidth=2)
+    ax.text(9.4, pc + 0.2, "P_ceiling" if kind == "ceiling" else "P_floor", color=ACCENT, fontsize=LABEL_FS)
     qd = (9 - pc) / 0.8; qs = (pc - 1) / 0.8
-    ax.plot([qd, qd], [0, pc], color="red", linestyle="--")
-    ax.plot([qs, qs], [0, pc], color="red", linestyle="--")
-    ax.text(qd, -0.4, "Q_d", ha="center", va="top", color="red")
-    ax.text(qs, -0.4, "Q_s", ha="center", va="top", color="red")
+    ax.plot([qd, qd], [0, pc], color=ACCENT, linestyle="--")
+    ax.plot([qs, qs], [0, pc], color=ACCENT, linestyle="--")
+    ax.text(qd, -0.4, "Q_d", ha="center", va="top", color=ACCENT)
+    ax.text(qs, -0.4, "Q_s", ha="center", va="top", color=ACCENT)
     if kind == "ceiling":
-        ax.annotate("Shortage", xy=((qd + qs) / 2, pc - 0.5), ha="center", color="red", fontsize=11)
+        ax.annotate("Shortage", xy=((qd + qs) / 2, pc - 0.5), ha="center", color=ACCENT, fontsize=11)
     else:
-        ax.annotate("Surplus", xy=((qd + qs) / 2, pc + 0.5), ha="center", color="red", fontsize=11)
+        ax.annotate("Surplus", xy=((qd + qs) / 2, pc + 0.5), ha="center", color=ACCENT, fontsize=11)
     return _save(fig, out)
 
 
@@ -237,13 +267,13 @@ def externality(out: str, kind: str = "negative_production", title: str | None =
     if kind == "negative_production":
         MPC = 1 + 0.8 * x; MSC = 3 + 0.8 * x; MPB = 9 - 0.8 * x
         ax.plot(x, MPC, **LINE); ax.text(9.6, MPC[-1], "MPC", fontsize=LABEL_FS, va="center")
-        ax.plot(x, MSC, color="red", linewidth=2); ax.text(9.6, MSC[-1], "MSC", color="red", fontsize=LABEL_FS, va="center")
+        ax.plot(x, MSC, color=ACCENT, linewidth=2); ax.text(9.6, MSC[-1], "MSC", color=ACCENT, fontsize=LABEL_FS, va="center")
         ax.plot(x, MPB, **LINE); ax.text(9.6, MPB[-1], "MPB=MSB", fontsize=LABEL_FS, va="center")
         # Q_market: MPC=MPB -> 1+0.8x = 9-0.8x -> x=5
         # Q_social: MSC=MSB -> 3+0.8x = 9-0.8x -> x=3.75
         ax.plot([5, 5], [0, 5], **DASH); ax.text(5, -0.4, "Q_m", ha="center", va="top")
-        ax.plot([3.75, 3.75], [0, 6], color="red", linestyle="--"); ax.text(3.75, -0.4, "Q*", ha="center", va="top", color="red")
-        ax.annotate("Welfare loss", xy=(4.4, 5.6), fontsize=10, color="red")
+        ax.plot([3.75, 3.75], [0, 6], color=ACCENT, linestyle="--"); ax.text(3.75, -0.4, "Q*", ha="center", va="top", color=ACCENT)
+        ax.annotate("Welfare loss", xy=(4.4, 5.6), fontsize=10, color=ACCENT)
     elif kind == "positive_consumption":
         MPC = 1 + 0.8 * x; MPB = 9 - 0.8 * x; MSB = 11 - 0.8 * x
         ax.plot(x, MPC, **LINE); ax.text(9.6, MPC[-1], "MPC=MSC", fontsize=LABEL_FS, va="center")
@@ -255,9 +285,9 @@ def externality(out: str, kind: str = "negative_production", title: str | None =
         MPC = 1 + 0.8 * x; MPB = 9 - 0.8 * x; MSB = 7 - 0.8 * x
         ax.plot(x, MPC, **LINE); ax.text(9.6, MPC[-1], "MPC=MSC", fontsize=LABEL_FS, va="center")
         ax.plot(x, MPB, **LINE); ax.text(9.6, MPB[-1], "MPB", fontsize=LABEL_FS, va="center")
-        ax.plot(x, MSB, color="red", linewidth=2); ax.text(9.6, MSB[-1], "MSB", color="red", fontsize=LABEL_FS, va="center")
+        ax.plot(x, MSB, color=ACCENT, linewidth=2); ax.text(9.6, MSB[-1], "MSB", color=ACCENT, fontsize=LABEL_FS, va="center")
         ax.plot([5, 5], [0, 5], **DASH); ax.text(5, -0.4, "Q_m", ha="center", va="top")
-        ax.plot([3.75, 3.75], [0, 4], color="red", linestyle="--"); ax.text(3.75, -0.4, "Q*", ha="center", va="top", color="red")
+        ax.plot([3.75, 3.75], [0, 4], color=ACCENT, linestyle="--"); ax.text(3.75, -0.4, "Q*", ha="center", va="top", color=ACCENT)
     elif kind == "positive_production":
         MPC = 3 + 0.8 * x; MSC = 1 + 0.8 * x; MPB = 9 - 0.8 * x
         ax.plot(x, MPC, **LINE); ax.text(9.6, MPC[-1], "MPC", fontsize=LABEL_FS, va="center")
@@ -277,7 +307,7 @@ def cost_curves_sr(out: str, title: str = "Short-run cost curves") -> str:
     ATC = AVC + AFC
     MC = 1 + 0.45 * (x - 3) ** 2
     ax.plot(x, MC, **LINE); ax.text(9.1, MC[-1], "MC", fontsize=LABEL_FS, va="center")
-    ax.plot(x, ATC, color="red", linewidth=2); ax.text(9.1, ATC[-1], "ATC", color="red", fontsize=LABEL_FS, va="center")
+    ax.plot(x, ATC, color=ACCENT, linewidth=2); ax.text(9.1, ATC[-1], "ATC", color=ACCENT, fontsize=LABEL_FS, va="center")
     ax.plot(x, AVC, color="blue", linewidth=2); ax.text(9.1, AVC[-1], "AVC", color="blue", fontsize=LABEL_FS, va="center")
     ax.plot(x, AFC, color="grey", linewidth=1.5, linestyle=":"); ax.text(9.1, AFC[-1], "AFC", color="grey", fontsize=LABEL_FS, va="center")
     ax.set_ylim(0, 10)
@@ -303,7 +333,7 @@ def perfect_competition(out: str, title: str = "Perfect competition (firm in lon
     AC = 0.25 * (x - 5) ** 2 + 3
     MC = 0.75 * (x - 4) ** 2 + 1
     P = 3
-    ax.plot(x, AC, color="red", linewidth=2); ax.text(9.1, AC[-1], "AC", color="red", fontsize=LABEL_FS, va="center")
+    ax.plot(x, AC, color=ACCENT, linewidth=2); ax.text(9.1, AC[-1], "AC", color=ACCENT, fontsize=LABEL_FS, va="center")
     ax.plot(x, MC, **LINE); ax.text(9.1, MC[-1], "MC", fontsize=LABEL_FS, va="center")
     ax.axhline(P, color="blue", linewidth=2); ax.text(9.1, P + 0.1, "P=MR=AR=D", color="blue", fontsize=LABEL_FS, va="center")
     ax.plot([5], [3], "ko"); ax.text(5.1, 2.5, "q*", fontsize=11)
@@ -320,7 +350,7 @@ def monopoly(out: str, title: str = "Monopoly equilibrium") -> str:
     MC = 0.75 * (x - 4) ** 2 + 1
     ax.plot(x, AR, **LINE); ax.text(9.1, AR[-1], "AR=D", fontsize=LABEL_FS, va="center")
     ax.plot(x, MR, **LINE, linestyle="--"); ax.text(9.1, MR[-1], "MR", fontsize=LABEL_FS, va="center")
-    ax.plot(x, AC, color="red", linewidth=2); ax.text(9.1, AC[-1], "AC", color="red", fontsize=LABEL_FS, va="center")
+    ax.plot(x, AC, color=ACCENT, linewidth=2); ax.text(9.1, AC[-1], "AC", color=ACCENT, fontsize=LABEL_FS, va="center")
     ax.plot(x, MC, color="blue", linewidth=2); ax.text(9.1, MC[-1], "MC", color="blue", fontsize=LABEL_FS, va="center")
     # MR=MC: 10 - 1.8x = 0.75(x-4)^2 + 1; numeric
     from scipy.optimize import brentq  # noqa
@@ -335,41 +365,75 @@ def monopoly(out: str, title: str = "Monopoly equilibrium") -> str:
     ax.plot([0, q_star], [ac_star, ac_star], **DASH)
     ax.text(q_star, -0.4, "Q*", ha="center", va="top")
     ax.text(-0.3, p_star, "P*", ha="right", va="center")
-    ax.text(-0.3, ac_star, "AC", ha="right", va="center", color="red")
+    ax.text(-0.3, ac_star, "AC", ha="right", va="center", color=ACCENT)
     # supernormal profit shaded
     ax.fill_between([0, q_star], ac_star, p_star, color="#fff2a8", alpha=0.7)
     ax.text(q_star / 2, (ac_star + p_star) / 2, "Supernormal\nprofit", ha="center", fontsize=10)
     return _save(fig, out)
 
 
+def _end_label(ax, xs, ys, text, color=INK):
+    """Label a curve at its right-hand end, clamped to stay inside the plot.
+
+    If the curve exits the top/bottom of the axes before the right edge, the
+    label is parked at the last visible point instead of floating off-axis.
+    """
+    xv, yv = float(xs[-1]), float(ys[-1])
+    if not (0.25 <= yv <= 9.65):
+        inside = [(float(a), float(b)) for a, b in zip(xs, ys) if 0.25 <= b <= 9.65]
+        if inside:
+            xv, yv = inside[-1]
+    ax.text(min(xv + 0.15, 9.7), yv, text, color=color, fontsize=LABEL_FS, va="center")
+
+
 def ad_as(out: str, shift: str | None = None, title: str = "AD–AS model") -> str:
-    """AD-AS. shift in {None,'ad_right','ad_left','sras_right','sras_left'}."""
+    """AD-AS. shift in {None,'ad_right','ad_left','sras_right','sras_left'}.
+
+    Baseline AD, SRAS and LRAS all meet at the full-employment equilibrium
+    (Y₀, P₀). A shift redraws the moved curve in ACCENT and marks the NEW
+    equilibrium (Y₁, P₁) with its own accent guide lines, so the diagram shows
+    the change rather than just the starting point.
+    """
     fig, ax = plt.subplots(figsize=(6, 4.5))
     _setup(ax, xlabel="Real GDP (Y)", ylabel="Price level (P)", title=title)
     x = np.linspace(0.5, 9.5, 80)
-    AD = 9 - 0.8 * x
+    # AD ∩ SRAS ∩ LRAS all at (6, 4.6): AD = 9.4-0.8x, SRAS = 1+0.6x, Y_f = 6
+    AD = 9.4 - 0.8 * x
     SRAS = 1 + 0.6 * x
-    # LRAS at Y_f = 6
-    ax.plot(x, AD, **LINE); ax.text(9.6, AD[-1], "AD", fontsize=LABEL_FS, va="center")
-    ax.plot(x, SRAS, **LINE); ax.text(9.6, SRAS[-1], "SRAS", fontsize=LABEL_FS, va="center")
-    ax.axvline(6, color="black", linewidth=2); ax.text(6.1, 9.4, "LRAS", fontsize=LABEL_FS)
-    # eq: 9-0.8x = 1+0.6x -> 8 = 1.4x -> x=5.71, P=4.43
-    ax.plot([5.71, 5.71], [0, 4.43], **DASH)
-    ax.plot([0, 5.71], [4.43, 4.43], **DASH)
-    ax.text(5.71, -0.4, "Y₀", ha="center", va="top")
-    ax.text(-0.3, 4.43, "P₀", ha="right", va="center")
+    Yf, x0, p0 = 6.0, 6.0, 4.6
+    DASH_A = dict(color=ACCENT, linewidth=1, linestyle="--")
+
+    ax.plot(x, AD, **LINE); _end_label(ax, x, AD, "AD")
+    ax.plot(x, SRAS, **LINE); _end_label(ax, x, SRAS, "SRAS")
+    ax.axvline(Yf, color=INK, linewidth=2)
+    ax.text(Yf + 0.15, 9.4, "LRAS", fontsize=LABEL_FS, va="top")
+
+    # baseline equilibrium
+    ax.plot([x0, x0], [0, p0], **DASH); ax.plot([0, x0], [p0, p0], **DASH)
+    ax.plot([x0], [p0], "o", color=INK, ms=5, zorder=5)
+    ax.text(x0, -0.35, "Y₀", ha="center", va="top", fontsize=LABEL_FS)
+    ax.text(-0.35, p0, "P₀", ha="right", va="center", fontsize=LABEL_FS)
+
+    new = None  # (x1, p1)
     if shift == "ad_right":
-        AD2 = 11 - 0.8 * x
-        ax.plot(x, AD2, color="red", linewidth=2); ax.text(9.6, AD2[-1], "AD₁", color="red", fontsize=LABEL_FS, va="center")
+        AD2 = 10.8 - 0.8 * x; ax.plot(x, AD2, color=ACCENT, linewidth=2)
+        _end_label(ax, x, AD2, "AD₁", ACCENT); new = (7.0, 1 + 0.6 * 7.0)
     elif shift == "ad_left":
-        AD2 = 7 - 0.8 * x
-        ax.plot(x, AD2, color="red", linewidth=2); ax.text(9.6, AD2[-1], "AD₁", color="red", fontsize=LABEL_FS, va="center")
+        AD2 = 8.0 - 0.8 * x; ax.plot(x, AD2, color=ACCENT, linewidth=2)
+        _end_label(ax, x, AD2, "AD₁", ACCENT); new = (5.0, 1 + 0.6 * 5.0)
     elif shift == "sras_right":
-        S2 = -1 + 0.6 * x
-        ax.plot(x, S2, color="red", linewidth=2); ax.text(9.6, S2[-1], "SRAS₁", color="red", fontsize=LABEL_FS, va="center")
+        S2 = -0.4 + 0.6 * x; ax.plot(x, S2, color=ACCENT, linewidth=2)
+        _end_label(ax, x, S2, "SRAS₁", ACCENT); new = (7.0, 9.4 - 0.8 * 7.0)
     elif shift == "sras_left":
-        S2 = 3 + 0.6 * x
-        ax.plot(x, S2, color="red", linewidth=2); ax.text(9.6, S2[-1], "SRAS₁", color="red", fontsize=LABEL_FS, va="center")
+        S2 = 2.4 + 0.6 * x; ax.plot(x, S2, color=ACCENT, linewidth=2)
+        _end_label(ax, x, S2, "SRAS₁", ACCENT); new = (5.0, 9.4 - 0.8 * 5.0)
+
+    if new:
+        x1, p1 = new
+        ax.plot([x1, x1], [0, p1], **DASH_A); ax.plot([0, x1], [p1, p1], **DASH_A)
+        ax.plot([x1], [p1], "o", color=ACCENT, ms=5, zorder=5)
+        ax.text(x1, -0.35, "Y₁", ha="center", va="top", fontsize=LABEL_FS, color=ACCENT)
+        ax.text(-0.35, p1, "P₁", ha="right", va="center", fontsize=LABEL_FS, color=ACCENT)
     return _save(fig, out)
 
 
@@ -436,7 +500,7 @@ def tariff(out: str, title: str = "Effect of an import tariff") -> str:
     ax.plot(x, S, **LINE); ax.text(9.6, S[-1], "S", fontsize=LABEL_FS, va="center")
     Pw, Pt = 3, 4.5
     ax.axhline(Pw, color="blue", linewidth=2); ax.text(9.6, Pw + 0.1, "P_world", color="blue", fontsize=LABEL_FS, va="center")
-    ax.axhline(Pt, color="red", linewidth=2); ax.text(9.6, Pt + 0.1, "P_world+tariff", color="red", fontsize=LABEL_FS, va="center")
+    ax.axhline(Pt, color=ACCENT, linewidth=2); ax.text(9.6, Pt + 0.1, "P_world+tariff", color=ACCENT, fontsize=LABEL_FS, va="center")
     # Quantities
     Qd_w = (9 - Pw) / 0.6; Qs_w = (Pw - 1) / 0.6
     Qd_t = (9 - Pt) / 0.6; Qs_t = (Pt - 1) / 0.6
@@ -505,8 +569,62 @@ def money_market(out: str, title: str = "Money market") -> str:
 # Map of diagram_id -> (function, default_kwargs). The build_deck.py script
 # resolves diagram_id strings from the JSON spec to functions here.
 
+def demand_curve(out: str, title: str = "The demand curve") -> str:
+    """A single downward-sloping demand curve (for the D intro slide)."""
+    fig, ax = plt.subplots(figsize=(5.5, 4.5))
+    _setup(ax, title=title)
+    x = np.linspace(0.5, 9.5, 50)
+    D = 9 - 0.8 * x
+    ax.plot(x, D, **LINE)
+    ax.text(9.6, D[-1], "D", fontsize=LABEL_FS, va="center")
+    ax.annotate("Lower price →\nmore demanded", xy=(7.2, 9 - 0.8 * 7.2),
+                xytext=(3.1, 7.6), fontsize=9, color="grey",
+                arrowprops=dict(arrowstyle="->", color="grey"))
+    return _save(fig, out)
+
+
+def supply_curve(out: str, title: str = "The supply curve") -> str:
+    """A single upward-sloping supply curve (for the S intro slide)."""
+    fig, ax = plt.subplots(figsize=(5.5, 4.5))
+    _setup(ax, title=title)
+    x = np.linspace(0.5, 9.5, 50)
+    S = 1 + 0.8 * x
+    ax.plot(x, S, **LINE)
+    ax.text(9.6, S[-1], "S", fontsize=LABEL_FS, va="center")
+    ax.annotate("Higher price →\nmore supplied", xy=(7.2, 1 + 0.8 * 7.2),
+                xytext=(1.3, 8.4), fontsize=9, color="grey",
+                arrowprops=dict(arrowstyle="->", color="grey"))
+    return _save(fig, out)
+
+
+def demand_movement(out: str, title: str = "Movement along the demand curve") -> str:
+    """A change in the good's OWN price → movement ALONG D (not a shift).
+    Pair with demand_supply_demand_right to contrast movement vs shift."""
+    fig, ax = plt.subplots(figsize=(5.5, 4.5))
+    _setup(ax, title=title)
+    x = np.linspace(0.5, 9.5, 50)
+    D = 9 - 0.8 * x
+    ax.plot(x, D, **LINE)
+    ax.text(9.6, D[-1], "D", fontsize=LABEL_FS, va="center")
+    ax0, p0 = 3.75, 6.0     # point A: high price, low quantity
+    bx, p1 = 6.25, 4.0      # point B: low price, high quantity
+    ax.plot(ax0, p0, "o", color=INK); ax.plot(bx, p1, "o", color=INK)
+    _drop(ax, ax0, p0, "Q", "P")
+    _drop(ax, bx, p1, "Q₁", "P₁")
+    ax.annotate("", xy=(bx, p1), xytext=(ax0, p0),
+                arrowprops=dict(arrowstyle="->", color=ACCENT, lw=2,
+                                connectionstyle="arc3,rad=-0.2"))
+    ax.text(ax0 - 0.15, p0 + 0.35, "A", fontsize=11)
+    ax.text(bx + 0.2, p1, "B", fontsize=11)
+    ax.text(5.7, 5.5, "movement\nalong D", color=ACCENT, fontsize=10, ha="center")
+    return _save(fig, out)
+
+
 REGISTRY = {
     "demand_supply": (demand_supply, {}),
+    "demand_curve": (demand_curve, {}),
+    "supply_curve": (supply_curve, {}),
+    "demand_movement": (demand_movement, {}),
     "demand_supply_demand_right": (demand_supply, {"shift": "demand_right"}),
     "demand_supply_demand_left": (demand_supply, {"shift": "demand_left"}),
     "demand_supply_supply_right": (demand_supply, {"shift": "supply_right"}),
